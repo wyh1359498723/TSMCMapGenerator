@@ -75,7 +75,7 @@ namespace TSMCMapGenerator.Services
             string bdfile = new string(' ', 20);
             string ttestprogram = testProgram + ".xlsm";
 
-            if (cust is "TLK" or "NTX" or "HTX" or "XTW")
+            if (cust is "TLK" or "NTX" or "HTX" or "XTW" or "ALG")
             {
                 ttestprogram = testProgram; // 不加.xlsm
                 bdfile = "TMTH51_HTSH_1_CP1".PadRight(20);
