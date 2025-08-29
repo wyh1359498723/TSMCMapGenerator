@@ -12,24 +12,40 @@ class Program
 
         var repo = new TsmcRepository(connStr);
         var service = new TsmcMapService(repo, outputDir);
-
-        // 从 API 获取 wafers 数据
         var dataFetcher = new StdfDataFetcher();
-        string lotId = "ALGT10042.1";
-        string cp = "CP1";
-        string rp = "RP1";
-        string wfno = "1";
-        var wafers = await dataFetcher.GetWafersDataAsync(lotId, cp, rp, wfno);
 
-        if (wafers != null && wafers.Any())
+        // 获取需要生成map的批次信息
+        List<LotInfoModel> lotsToProcess = repo.GetLotInfoForMapGeneration();
+
+        if (lotsToProcess == null || !lotsToProcess.Any())
         {
-            service.Generate("ALG", "GXLX3_B", wafers);
-        }
-        else
-        {
-            Console.WriteLine("未能从 API 获取到晶圆数据或数据为空。");
+            Console.WriteLine("没有找到需要生成 TSMC Map 的批次信息。");
+            return;
         }
 
-        Console.WriteLine("完成");
+        foreach (var lotInfo in lotsToProcess)
+        {
+            Console.WriteLine($"[INFO] 开始处理批次: {lotInfo.LotId}, 设备: {lotInfo.Device}, CP: {lotInfo.Cp}, RP: {lotInfo.Rp}");
+
+            string[] wfNos = lotInfo.AllWfNo.Split(',');
+
+            foreach (string wfno in wfNos)
+            {
+                Console.WriteLine($"[INFO]   正在获取晶圆数据 LotId: {lotInfo.LotId}, CP: {lotInfo.Cp}, RP: {lotInfo.Rp}, Wfno: {wfno}");
+                var wafers = await dataFetcher.GetWafersDataAsync(lotInfo.LotId, lotInfo.Cp, lotInfo.Rp, wfno);
+
+                if (wafers != null && wafers.Any())
+                {
+                    // 使用从数据库获取的 cust_code 和 device
+                    service.Generate(lotInfo.Cust_Code, lotInfo.Device, wafers);
+                }
+                else
+                {
+                    Console.WriteLine($"[WARNING] 未能从 API 获取到晶圆数据或数据为空。LotId: {lotInfo.LotId}, CP: {lotInfo.Cp}, RP: {lotInfo.Rp}, Wfno: {wfno}");
+                }
+            }
+        }
+
+        Console.WriteLine("所有 TSMC Map 生成任务完成。");
     }
 }
