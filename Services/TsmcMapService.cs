@@ -26,13 +26,6 @@ namespace TSMCMapGenerator.Services
         /// <param name="wafers">wafer数据</param>
         public void Generate(string cust, string device, List<Stdf_BinsGroupModel> wafers)
         {
-            // ✅ 唯一判断逻辑：cust/device 是否在 MMS_TSMC_DEVICE
-            if (!_repo.ExistsInMmsTsmcDevice(cust, device))
-            {
-                Console.WriteLine($"[SKIP] {cust}-{device} 不在 MMS_TSMC_DEVICE 表中，跳过生成 TSMC Map");
-                return;
-            }
-
             Console.WriteLine($"[INFO] {cust}-{device} 在 MMS_TSMC_DEVICE 表中，开始生成 TSMC Map 文件...");
 
             foreach (var wafer in wafers)
@@ -109,6 +102,9 @@ namespace TSMCMapGenerator.Services
             var tmpnorth = flat.Substring(0, 1).ToUpper();
 
             string header = $"{tmplotid}{tmpwfid}{tmpdevice}{"".PadRight(10)}{tmptester}{tmpoper}{tmptestprogram}{startTime}{endTime}{tmpcardid}{"".PadRight(12)}{bdfile}{tmpnorth}{cp.Substring(2, 1)}{"HTSH    "}{"".PadRight(20)}";
+            //if(cust=="MCB")             {
+            //       header = $"{tmplotid}{tmpwfid}{tmpdevice}{"".PadRight(10)}{tmptester}{tmpoper}{tmptestprogram}{startTime}{endTime}{tmpcardid}{"".PadRight(12)}{"".PadRight(18)}{cp.Substring(2, 1)}{"HTSH    "}{"".PadRight(20)}";
+            //}
 
             // === 写文件 ===
             string mapPath = Path.Combine(_outputDir, lotNo.Substring(0, 3), device.Trim(), wfLot.Trim(), "FINAL", "TSMC");
