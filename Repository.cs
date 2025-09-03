@@ -37,7 +37,7 @@ namespace TSMCMapGenerator
 
         public DataTable GetSplit(string lotId, string wfNo)
         {
-            string sql = $"SELECT * FROM RTM_ADMIN.RTM_P_DATA_SPLIT WHERE LOT_ID='{lotId}' AND SPLIT_WF_NO LIKE '%{wfNo}%'";
+            string sql = $"SELECT * FROM RTM_ADMIN.RTM_P_DATA_SPLIT WHERE LOT_ID='{lotId}' AND SPLIT_WF_NO LIKE '%{wfNo}%' ORDER BY SERIAL_NO ASC";
             return Query(sql);
         }
 
@@ -47,12 +47,13 @@ namespace TSMCMapGenerator
             return Query(sql);
         }
 
-        public List<PDataDetail> GetDetail(string lotId, string cp)
+        public List<PDataDetail> GetDetail(string lotId, string cp,string wfno)
         {
-            string sql = $"SELECT * FROM P_DATA_DETAIL WHERE LOT_ID='{lotId}' AND CP_NO='{cp}' ORDER BY TO_NUMBER(WF_NO)";
+            string sql = $"SELECT * FROM P_DATA_DETAIL WHERE LOT_ID='{lotId}' AND CP_NO='{cp}' AND WF_NO='{wfno}'";
             var dt = Query(sql);
             return dt.AsEnumerable().Select(r => new PDataDetail
             {
+                ID = r["ID"].ToString(),
                 LOT_ID = r["LOT_ID"].ToString(),
                 CP_NO = r["CP_NO"].ToString(),
                 WF_NO = r["WF_NO"].ToString(),
@@ -85,7 +86,7 @@ namespace TSMCMapGenerator
                         from 
                             wip_lot_testerstate  
                         where 
-                             step >= 3
+                             step >= 3 and lotid='GMTE10420.1'
                         group by 
                             lotid, cp, rp
                     ) main
@@ -96,7 +97,7 @@ namespace TSMCMapGenerator
                         select 1 
                         from MMS_TSMC_DEVICE mms
                         where mms.MTD_DEVICE = nvl(b.DEVICE, a.product_no)
-                          and mms.MTD_CUST = b.cust_code and mms.MTD_CUST='MCB' and mms.MTD_DEVICE='MBB201QB'
+                          and mms.MTD_CUST = b.cust_code 
                     )";
 
             var dt = Query(sql);
@@ -110,6 +111,34 @@ namespace TSMCMapGenerator
                 Device = r["DEVICE"].ToString(),
                 Cust_Code = r["CUST_CODE"].ToString()
             }).ToList();
+        }
+
+        public PDataDetailTestInfoModel GetPDataDetailTestInfo(string detailId)
+        {
+            string sql = $"SELECT ID, POSITIONBIN, FIRSTBIN FROM P_DATA_DETAIL_TESTINFO WHERE DETAILID='{detailId}'"; 
+            var dt = Query(sql);
+            if (dt.Rows.Count > 0)
+            {
+                var row = dt.Rows[0];
+                return new PDataDetailTestInfoModel
+                {
+                    ID = row["ID"].ToString(),
+                    PositionBin = row["POSITIONBIN"]?.ToString(),
+                    FirstBin = Convert.ToInt32(row["FIRSTBIN"])
+                };
+            }
+            return null;
+        }
+
+        public string GetLatestRpForCp(string lotId, string cp)
+        {
+            string sql = $"SELECT RP_NO FROM P_DATA_DETAIL WHERE LOT_ID='{lotId}' AND CP_NO='{cp}' ORDER BY START_DATE DESC, RP_NO DESC FETCH FIRST 1 ROW ONLY";
+            var dt = Query(sql);
+            if (dt.Rows.Count > 0)
+            {
+                return dt.Rows[0]["RP_NO"].ToString();
+            }
+            return null;
         }
     }
 }

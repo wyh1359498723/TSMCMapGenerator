@@ -11,8 +11,8 @@ class Program
         string outputDir = ConfigurationManager.AppSettings["TsmcMapOutputDir"];
 
         var repo = new TsmcRepository(connStr);
-        var service = new TsmcMapService(repo, outputDir);
-        var dataFetcher = new StdfDataFetcher();
+        var dataFetcher = new StdfDataFetcher(); // StdfDataFetcher 实例在这里创建
+        var service = new TsmcMapService(repo, outputDir, dataFetcher); // 传递 dataFetcher 给服务
 
         // 获取需要生成map的批次信息
         List<LotInfoModel> lotsToProcess = repo.GetLotInfoForMapGeneration();
@@ -36,8 +36,8 @@ class Program
 
                 if (wafers != null && wafers.Any())
                 {
-                    // 使用从数据库获取的 cust_code 和 device
-                    service.Generate(lotInfo.Cust_Code, lotInfo.Device, wafers);
+                    // 使用从数据库获取的 cust_code 和 device，并传递 lotInfo.Rp 作为 rpForCurrentWafer
+                    await service.Generate(lotInfo.Cust_Code, lotInfo.Device, lotInfo.Rp, wafers);
                 }
                 else
                 {

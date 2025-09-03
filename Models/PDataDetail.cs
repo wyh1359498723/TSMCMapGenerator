@@ -8,6 +8,7 @@ namespace TSMCMapGenerator.Models
 {
     public class PDataDetail
     {
+        public string ID { get; set; }
         public string LOT_ID { get; set; }
         public string CP_NO { get; set; }
         public string WF_NO { get; set; }
