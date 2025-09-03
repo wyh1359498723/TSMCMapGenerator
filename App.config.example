@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <connectionStrings>
+    <add name="OracleConnection" connectionString="Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=your_oracle_host)(PORT=1539))(CONNECT_DATA=(SERVICE_NAME=MESDB)));User Id=your_username;Password=your_password;" providerName="Oracle.ManagedDataAccess.Client" />
+  </connectionStrings>
+  <appSettings>
+    <add key="StdfApiBaseUrl" value="http://your_stdf_api_url/api/StdfRetrieve/GetStdfHardBinAndSoftBin" />
+    <add key="TsmcMapOutputDir" value="C:\TSMC_MAP_OUTPUT" />
+  </appSettings>
+</configuration>
