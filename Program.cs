@@ -8,8 +8,8 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        Logger.Init(); // 初始化 Serilog
-        Log.Information("应用程序开始运行。"); // 记录开始信息
+        Logger.Init(); 
+        Log.Information("应用程序开始运行。"); // 
 
         try
         {
@@ -17,8 +17,8 @@ class Program
             string outputDir = ConfigurationManager.AppSettings["TsmcMapOutputDir"];
 
             var repo = new TsmcRepository(connStr);
-            var dataFetcher = new StdfDataFetcher(); // StdfDataFetcher 实例在这里创建
-            var service = new TsmcMapService(repo, outputDir, dataFetcher); // 传递 dataFetcher 给服务
+            var dataFetcher = new StdfDataFetcher(); 
+            var service = new TsmcMapService(repo, outputDir, dataFetcher); 
 
             // 获取需要生成map的批次信息
             List<LotInfoModel> lotsToProcess = repo.GetLotInfoForMapGeneration();
@@ -57,15 +57,19 @@ class Program
                 repo.UpdateRemarkWithTsmcCreated(lotInfo.LotId, lotInfo.Cp);
             }
 
-            Log.Information("所有 TSMC Map 生成任务完成。"); // 记录结束信息
+            Log.Information("所有 TSMC Map 生成任务完成。"); 
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "应用程序发生未处理的错误。"); // 记录异常
+            Log.Error(ex, "应用程序发生未处理的错误。"); 
+            List<string> mailReceivers = ConfigurationManager.AppSettings["MailReceiver"].Split(',').ToList();
+            string subject = "TSMCMapGenerator 应用程序错误";
+            string content = $"应用程序发生未处理的错误：\n{ex.Message}\n堆栈跟踪：\n{ex.StackTrace}";
+            MailHelper.SendMail(subject, content, mailReceivers);
         }
         finally
         {
-            Logger.CloseAndFlush(); // 刷新并关闭日志
+            Logger.CloseAndFlush(); 
         }
     }
 }
