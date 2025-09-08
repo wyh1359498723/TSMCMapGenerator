@@ -29,12 +29,13 @@ namespace TSMCMapGenerator.Services
         /// <param name="wafers">wafer数据</param>
         public async Task Generate(string cust, string device, string rpForCurrentWafer, List<Stdf_BinsGroupModel> wafers)
         {
-            Console.WriteLine($"[INFO] {cust}-{device} 在 MMS_TSMC_DEVICE 表中，开始生成 TSMC Map 文件...");
+            
+                Console.WriteLine($"[INFO] {cust}-{device} 在 MMS_TSMC_DEVICE 表中，开始为 LotId: {wafers[0].LotId}, CP: {wafers[0].CP} 生成 TSMC Map 文件...");
 
-            foreach (var wafer in wafers)
-            {
-                await CreateTsmcMap(cust, device, rpForCurrentWafer, wafer);
-            }
+                await CreateTsmcMap(cust, device, rpForCurrentWafer, wafers[0]);
+                
+            
+
         }
 
         private async Task CreateTsmcMap(string cust, string device, string rpForCurrentWafer, Stdf_BinsGroupModel wafer)

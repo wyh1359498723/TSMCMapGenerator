@@ -86,19 +86,21 @@ namespace TSMCMapGenerator
                         from 
                             wip_lot_testerstate  
                         where 
-                             step >= 3 and lotid='GMTE10420.1'
+                             step >= 3 
                         group by 
                             lotid, cp, rp
                     ) main
                     left join htmms_get_lotinfo b on main.lotid = b.lot_id
                     left join wip_lot a on a.order_no || '.' || a.order_sub_lot = b.lot_id
-                where 
+                    LEFT JOIN RTM_ADMIN.RTM_P_DATA_HEAD rpdh ON rpdh.LOT_ID = main.lotid AND rpdh.CP_NO = main.cp
+                where
                     exists (
                         select 1 
                         from MMS_TSMC_DEVICE mms
                         where mms.MTD_DEVICE = nvl(b.DEVICE, a.product_no)
                           and mms.MTD_CUST = b.cust_code 
-                    )";
+                    )
+                    AND (rpdh.REMARK IS NULL OR NOT INSTR(rpdh.REMARK, '<TSMC_CREATED>') > 0)";
 
             var dt = Query(sql);
             return dt.AsEnumerable().Select(r => new LotInfoModel
@@ -128,6 +130,40 @@ namespace TSMCMapGenerator
                 };
             }
             return null;
+        }
+
+        public void UpdateRemarkWithTsmcCreated(string lotId, string cp)
+        {
+            string currentRemark = string.Empty;
+            string selectSql = $"SELECT REMARK FROM RTM_ADMIN.RTM_P_DATA_HEAD WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
+            var dt = Query(selectSql);
+
+            if (dt.Rows.Count > 0 && dt.Rows[0]["REMARK"] != DBNull.Value)
+            {
+                currentRemark = dt.Rows[0]["REMARK"].ToString();
+            }
+
+            if (!currentRemark.Contains("<TSMC_CREATED>"))
+            {
+                string newRemark = string.IsNullOrEmpty(currentRemark) ? "<TSMC_CREATED>" : currentRemark + "<TSMC_CREATED>";
+                string updateSql = $"UPDATE RTM_ADMIN.RTM_P_DATA_HEAD SET REMARK='{newRemark}' WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
+                using var conn = new OracleConnection(_connStr);
+                using var cmd = new OracleCommand(updateSql, conn);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
+        }
+
+        public bool CheckRemarkForTsmcCreated(string lotId, string cp)
+        {
+            string sql = $"SELECT REMARK FROM RTM_ADMIN.RTM_P_DATA_HEAD WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
+            var dt = Query(sql);
+            if (dt.Rows.Count > 0 && dt.Rows[0]["REMARK"] != DBNull.Value)
+            {
+                return dt.Rows[0]["REMARK"].ToString().Contains("<TSMC_CREATED>");
+            }
+            return false;
         }
 
         public string GetLatestRpForCp(string lotId, string cp)

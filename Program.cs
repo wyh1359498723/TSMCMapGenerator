@@ -36,14 +36,19 @@ class Program
 
                 if (wafers != null && wafers.Any())
                 {
-                    // 使用从数据库获取的 cust_code 和 device，并传递 lotInfo.Rp 作为 rpForCurrentWafer
-                    await service.Generate(lotInfo.Cust_Code, lotInfo.Device, lotInfo.Rp, wafers);
+                    // 在生成任何晶圆之前，先检查 REMARK 字段是否包含 <TSMC_CREATED>
+                    if (!repo.CheckRemarkForTsmcCreated(lotInfo.LotId, lotInfo.Cp))
+                        // 使用从数据库获取的 cust_code 和 device，并传递 lotInfo.Rp 作为 rpForCurrentWafer
+                        await service.Generate(lotInfo.Cust_Code, lotInfo.Device, lotInfo.Rp, wafers);
                 }
                 else
                 {
                     Console.WriteLine($"[WARNING] 未能从 API 获取到晶圆数据或数据为空。LotId: {lotInfo.LotId}, CP: {lotInfo.Cp}, RP: {lotInfo.Rp}, Wfno: {wfno}");
                 }
             }
+
+            // 在所有 wfno 都生成完后，更新 REMARK 字段
+            repo.UpdateRemarkWithTsmcCreated(lotInfo.LotId, lotInfo.Cp);
         }
 
         Console.WriteLine("所有 TSMC Map 生成任务完成。");
