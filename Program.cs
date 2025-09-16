@@ -26,7 +26,7 @@ class Program
             if (lotsToProcess == null || !lotsToProcess.Any())
             {
                 Log.Information("没有找到需要生成 TSMC Map 的批次信息。");
-                return;
+                return; 
             }
 
             foreach (var lotInfo in lotsToProcess)
@@ -69,7 +69,9 @@ class Program
         }
         finally
         {
-            Logger.CloseAndFlush(); 
+
         }
+    
+        Logger.CloseAndFlush();
     }
 }

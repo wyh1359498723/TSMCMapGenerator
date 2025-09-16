@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TSMCMapGenerator.Models;
+using Serilog; // Added for Serilog logging
 
 namespace TSMCMapGenerator
 {
@@ -20,12 +21,20 @@ namespace TSMCMapGenerator
 
         private DataTable Query(string sql)
         {
-            using var conn = new OracleConnection(_connStr);
-            using var cmd = new OracleCommand(sql, conn);
-            using var adapter = new OracleDataAdapter(cmd);
-            var dt = new DataTable();
-            adapter.Fill(dt);
-            return dt;
+            try
+            {
+                using var conn = new OracleConnection(_connStr);
+                using var cmd = new OracleCommand(sql, conn);
+                using var adapter = new OracleDataAdapter(cmd);
+                var dt = new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "数据库查询失败：{Sql}", sql);
+                throw; // 重新抛出异常，以便上层调用者也能处理
+            }
         }
 
         public bool ExistsInMmsTsmcDevice(string cust, string device)
@@ -136,22 +145,31 @@ namespace TSMCMapGenerator
         {
             string currentRemark = string.Empty;
             string selectSql = $"SELECT REMARK FROM RTM_ADMIN.RTM_P_DATA_HEAD WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
-            var dt = Query(selectSql);
-
-            if (dt.Rows.Count > 0 && dt.Rows[0]["REMARK"] != DBNull.Value)
+            
+            try
             {
-                currentRemark = dt.Rows[0]["REMARK"].ToString();
+                var dt = Query(selectSql);
+
+                if (dt.Rows.Count > 0 && dt.Rows[0]["REMARK"] != DBNull.Value)
+                {
+                    currentRemark = dt.Rows[0]["REMARK"].ToString();
+                }
+
+                if (!currentRemark.Contains("<TSMC_CREATED>"))
+                {
+                    string newRemark = string.IsNullOrEmpty(currentRemark) ? "<TSMC_CREATED>" : currentRemark + "<TSMC_CREATED>";
+                    string updateSql = $"UPDATE RTM_ADMIN.RTM_P_DATA_HEAD SET REMARK='{newRemark}' WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
+                    using var conn = new OracleConnection(_connStr);
+                    using var cmd = new OracleCommand(updateSql, conn);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
             }
-
-            if (!currentRemark.Contains("<TSMC_CREATED>"))
+            catch (Exception ex)
             {
-                string newRemark = string.IsNullOrEmpty(currentRemark) ? "<TSMC_CREATED>" : currentRemark + "<TSMC_CREATED>";
-                string updateSql = $"UPDATE RTM_ADMIN.RTM_P_DATA_HEAD SET REMARK='{newRemark}' WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
-                using var conn = new OracleConnection(_connStr);
-                using var cmd = new OracleCommand(updateSql, conn);
-                conn.Open();
-                cmd.ExecuteNonQuery();
-                conn.Close();
+                Log.Error(ex, "更新批次 {LotId} 的 REMARK 字段失败，CP: {Cp}", lotId, cp);
+                throw; // 重新抛出异常
             }
         }
 
