@@ -314,5 +314,75 @@ namespace TSMCMapGenerator.Services
                 Log.Error(ex, "创建 TSMC Map 文件失败。客户: {Cust}, 设备: {Device}, LotId: {LotId}, WfNo: {WfNo}", cust, device, wafer.LotId, wafer.Wf_No);
             }
         }
+
+        // 解析片号字符串，例如 "#3-6,17-18,21,24-25"，返回整数列表
+        public List<int> ParseWaferNumbers(string waferNumbersString)
+        {
+            var waferNumbers = new List<int>();
+            if (string.IsNullOrWhiteSpace(waferNumbersString))
+            {
+                return waferNumbers;
+            }
+
+            // 移除开头的 '#' 字符（如果存在）
+            if (waferNumbersString.StartsWith("#"))
+            {
+                waferNumbersString = waferNumbersString.Substring(1);
+            }
+
+            var parts = waferNumbersString.Split(',');
+            foreach (var part in parts)
+            {
+                // 检查是否包含 '-' 或 '~' 作为范围分隔符
+                if (part.Contains("-") || part.Contains("~"))
+                {
+                    char separator = part.Contains("-") ? '-' : '~';
+                    var range = part.Split(separator);
+                    if (range.Length == 2 && int.TryParse(range[0], out int start) && int.TryParse(range[1], out int end))
+                    {
+                        for (int i = start; i <= end; i++)
+                        {
+                            waferNumbers.Add(i);
+                        }
+                    }
+                    else
+                    {
+                        Log.Warning("无法解析片号范围：{RangePart}", part);
+                    }
+                }
+                else if (int.TryParse(part, out int singleWaferNo))
+                {
+                    waferNumbers.Add(singleWaferNo);
+                }
+                else
+                {
+                    Log.Warning("无法解析单个片号：{SinglePart}", part);
+                }
+            }
+
+            return waferNumbers.Distinct().OrderBy(w => w).ToList();
+        }
+
+        // 检查片号列表是否完整
+        public bool CheckWaferCompleteness(List<int> waferNumbers)
+        {
+            if (!waferNumbers.Any())
+            {
+                return false; // 如果没有片号，则认为不完整
+            }
+
+            int minWafer = waferNumbers.Min();
+            int maxWafer = waferNumbers.Max();
+
+            // 检查从最小到最大的所有片号是否都存在
+            for (int i = minWafer; i <= maxWafer; i++)
+            {
+                if (!waferNumbers.Contains(i))
+                {
+                    return false; // 存在缺失的片号
+                }
+            }
+            return true; // 片号完整
+        }
     }
 }

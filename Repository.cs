@@ -194,5 +194,16 @@ namespace TSMCMapGenerator
             }
             return null;
         }
+
+        public string GetWaferNumbers(string lotId, string cp, string rp)
+        {
+            string sql = $"SELECT WF_NO FROM RTM_ADMIN.RTM_P_DATA_HEAD WHERE LOT_ID='{lotId}' AND CP_NO='{cp}' AND RP_NO = '{rp}'";
+            var dt = Query(sql);
+            if (dt.Rows.Count > 0)
+            {
+                return dt.Rows[0]["WF_NO"].ToString();
+            }
+            return null;
+        }
     }
 }

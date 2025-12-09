@@ -33,6 +33,21 @@ class Program
             {
                 Log.Information("[INFO] 开始处理批次: {LotId}, 设备: {Device}, CP: {Cp}, RP: {Rp}", lotInfo.LotId, lotInfo.Device, lotInfo.Cp, lotInfo.Rp);
 
+                // 获取并检查该批次的所有片号是否齐全
+                string waferNumbersString = repo.GetWaferNumbers(lotInfo.LotId, lotInfo.Cp, lotInfo.Rp);
+                if (string.IsNullOrEmpty(waferNumbersString))
+                {
+                    Log.Warning("未找到批次 {LotId}, CP: {Cp}, RP: {Rp} 的片号信息，跳过此批次。", lotInfo.LotId, lotInfo.Cp, lotInfo.Rp);
+                    continue;
+                }
+
+                List<int> parsedWaferNumbers = service.ParseWaferNumbers(waferNumbersString);
+                if (!service.CheckWaferCompleteness(parsedWaferNumbers))
+                {
+                    Log.Warning("批次 {LotId}, CP: {Cp}, RP: {Rp} 的片号不完整 ({WaferNumbersString})，跳过此批次。", lotInfo.LotId, lotInfo.Cp, lotInfo.Rp, waferNumbersString);
+                    continue;
+                }
+                
                 string[] wfNos = lotInfo.AllWfNo.Split(',');
 
                 foreach (string wfno in wfNos)
