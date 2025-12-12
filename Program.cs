@@ -69,7 +69,7 @@ class Program
                 }
 
                 // 在所有 wfno 都生成完后，更新 REMARK 字段
-                repo.UpdateRemarkWithTsmcCreated(lotInfo.LotId, lotInfo.Cp);
+                repo.UpdateRemarkWithTsmcCreated(lotInfo.LotId, lotInfo.Cp,lotInfo.Rp);
             }
 
             Log.Information("所有 TSMC Map 生成任务完成。"); 

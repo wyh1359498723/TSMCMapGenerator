@@ -141,10 +141,10 @@ namespace TSMCMapGenerator
             return null;
         }
 
-        public void UpdateRemarkWithTsmcCreated(string lotId, string cp)
+        public void UpdateRemarkWithTsmcCreated(string lotId, string cp,string rp)
         {
             string currentRemark = string.Empty;
-            string selectSql = $"SELECT REMARK FROM RTM_ADMIN.RTM_P_DATA_HEAD WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
+            string selectSql = $"SELECT REMARK FROM RTM_ADMIN.RTM_P_DATA_HEAD WHERE LOT_ID='{lotId}' AND CP_NO='{cp}' AND RP_NO='{rp}'";
             
             try
             {
@@ -158,7 +158,7 @@ namespace TSMCMapGenerator
                 if (!currentRemark.Contains("<TSMC_CREATED>"))
                 {
                     string newRemark = string.IsNullOrEmpty(currentRemark) ? "<TSMC_CREATED>" : currentRemark + "<TSMC_CREATED>";
-                    string updateSql = $"UPDATE RTM_ADMIN.RTM_P_DATA_HEAD SET REMARK='{newRemark}' WHERE LOT_ID='{lotId}' AND CP_NO='{cp}'";
+                    string updateSql = $"UPDATE RTM_ADMIN.RTM_P_DATA_HEAD SET REMARK='{newRemark}' WHERE LOT_ID='{lotId}' AND CP_NO='{cp}' AND RP_NO='{rp}'";
                     using var conn = new OracleConnection(_connStr);
                     using var cmd = new OracleCommand(updateSql, conn);
                     conn.Open();
