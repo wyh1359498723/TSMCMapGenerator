@@ -42,11 +42,11 @@ class Program
                 }
 
                 List<int> parsedWaferNumbers = service.ParseWaferNumbers(waferNumbersString);
-                if (!service.CheckWaferCompleteness(parsedWaferNumbers))
-                {
-                    Log.Warning("批次 {LotId}, CP: {Cp}, RP: {Rp} 的片号不完整 ({WaferNumbersString})，跳过此批次。", lotInfo.LotId, lotInfo.Cp, lotInfo.Rp, waferNumbersString);
-                    continue;
-                }
+                //if (!service.CheckWaferCompleteness(parsedWaferNumbers))
+                //{
+                //    Log.Warning("批次 {LotId}, CP: {Cp}, RP: {Rp} 的片号不完整 ({WaferNumbersString})，跳过此批次。", lotInfo.LotId, lotInfo.Cp, lotInfo.Rp, waferNumbersString);
+                //    continue;
+                //}
                 
                 string[] wfNos = lotInfo.AllWfNo.Split(',');
 
