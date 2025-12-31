@@ -96,6 +96,9 @@ namespace TSMCMapGenerator
                             wip_lot_testerstate  
                         where 
                              step >= 3 
+                         AND STDF_FTPPATH IS NOT NULL
+                         AND STDF_DOWNTIME IS NOT NULL
+                         AND STDF_HISID IS NOT NULL
                         group by 
                             lotid, cp, rp
                     ) main
