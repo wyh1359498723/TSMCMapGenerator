@@ -97,7 +97,7 @@ namespace TSMCMapGenerator.Services
                 // === 生成 bdfile & testProgram 规则 ===
                 string bdfile = new string(' ', 20);
                 string ttestprogram = testProgram + ".xlsm";
-                if(cust is "ALG")
+                if(cust is "ALG" or "RXW")
                 {
                     ttestprogram = testProgram; // 不加.xlsm
                 }

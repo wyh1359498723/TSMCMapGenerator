@@ -112,7 +112,8 @@ namespace TSMCMapGenerator
                         where mms.MTD_DEVICE = nvl(b.DEVICE, a.product_no)
                           and mms.MTD_CUST = b.cust_code 
                     )
-                    AND (rpdh.REMARK IS NULL OR NOT INSTR(rpdh.REMARK, '<TSMC_CREATED>') > 0)";
+                    AND (rpdh.REMARK IS NULL OR NOT INSTR(rpdh.REMARK, '<TSMC_CREATED>') > 0)
+                    AND rpdh.STATUS='FINISH'";
 
             var dt = Query(sql);
             return dt.AsEnumerable().Select(r => new LotInfoModel

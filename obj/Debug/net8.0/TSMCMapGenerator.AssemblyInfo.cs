@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TSMCMapGenerator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c112291d88be4f9bc34c2ff172c1f40fc4ac24a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9804055bcfa7320e76bc343df22fed4a80a83361")]
 [assembly: System.Reflection.AssemblyProductAttribute("TSMCMapGenerator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TSMCMapGenerator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
